@@ -1,0 +1,22 @@
+#the dockerfile for our python pipeline (Python 3.13)
+FROM python:3.13-slim
+
+#copy from official repo
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/ 
+
+#working 
+WORKDIR /app
+
+#adding virtual env
+ENV PATH="/app/.venv/bin:$PATH"
+
+#Copying uv dependencies file
+COPY pyproject.toml .python-version uv.lock ./
+
+#unstalling dependencies from uv lock file, to ensure reproducible builds
+RUN uv sync --locked
+
+#bringing in our pipeline code
+COPY pipeline.py . 
+
+ENTRYPOINT ["uv", "run", "python", "pipeline.py"]
